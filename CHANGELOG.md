@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.8.0] - 2026-03-17
+
+### Security
+- **Prompt injection mitigation**: Node names are now sanitized (control characters stripped, length capped at 256) before appearing in MCP tool responses, preventing graph-laundered prompt injection attacks
+- **Path traversal protection**: `repo_root` parameter now validates that the target directory contains a `.git` or `.code-review-graph` directory, preventing arbitrary file exfiltration via MCP tools
+- **VSCode RCE fix**: `cliPath` setting is now scoped to `machine` level only, preventing malicious workspace settings from pointing to attacker-controlled binaries
+- **XSS fix in visualization**: `escH()` now escapes quotes and backticks in addition to angle brackets, closing stored XSS via crafted node names in generated HTML
+- **SRI for CDN assets**: D3.js script tag now includes `integrity` and `crossorigin` attributes to prevent CDN compromise
+- **Secure nonce generation**: VSCode webview CSP nonces now use `crypto.randomBytes()` instead of `Math.random()`
+- **Symlink protection**: Build, watch mode, and file collection now skip symbolic links to prevent parsing files outside the repository
+- **TOCTOU elimination**: File bytes are now read once, then hashed and parsed from the same buffer, closing the time-of-check-to-time-of-use gap
+
+### Fixed
+- **Thread-safe NetworkX cache**: Added `threading.Lock` around graph cache reads/writes to prevent race conditions between watch mode and MCP request handling
+- **BFS resource limits**: Impact radius traversal now caps at 500 nodes to prevent memory exhaustion on dense graphs
+- **SQL parameter batching**: `get_edges_among` now batches queries to stay under SQLite's variable limit on large node sets
+- **Database path leakage**: Improved `.gitignore` inside `.code-review-graph/` with explicit warnings about absolute paths in the database
+
+### Changed
+- **Pinned dependency bounds**: All dependencies now have upper-bound version constraints to mitigate supply-chain risks
+
 ## [1.7.2] - 2026-03-09
 
 ### Fixed
