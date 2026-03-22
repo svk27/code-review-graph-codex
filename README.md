@@ -41,7 +41,7 @@ code-review-graph install --client codex  # Codex
 code-review-graph install --client all    # both adapters
 ```
 
-Restart the client you configured after install. Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). Restart the client you configured after install.
 
 Then open your project and:
 
@@ -51,6 +51,82 @@ Codex: $code-review-graph-build-graph
 ```
 
 The initial build takes ~10 seconds for a 500-file project. After that, Claude can keep the graph fresh with hooks, while Codex uses a watcher-first workflow via `code-review-graph watch`.
+
+---
+
+## Codex Get Started
+
+If you are setting this up for Codex specifically, this is the shortest end-to-end path:
+
+```bash
+pip install code-review-graph
+code-review-graph install --client codex
+code-review-graph build
+code-review-graph watch   # optional but recommended in a second terminal
+```
+
+`code-review-graph install --client codex` adds the Codex-facing integration files to your repo:
+
+- `.codex/config.toml` with the `code-review-graph` MCP server
+- `AGENTS.md` guidance telling Codex when to prefer the graph tools
+- `.agents/skills/code-review-graph-build-graph/SKILL.md`
+- `.agents/skills/code-review-graph-review-delta/SKILL.md`
+- `.agents/skills/code-review-graph-review-pr/SKILL.md`
+
+After restarting Codex or starting a new session, you can use the repo-local skills directly:
+
+```text
+$code-review-graph-build-graph
+$code-review-graph-review-delta
+$code-review-graph-review-pr
+```
+
+### Codex Demo
+
+Here is a practical first session in a repository you want Codex to review:
+
+```bash
+cd your-repo
+pip install code-review-graph
+code-review-graph install --client codex
+code-review-graph build
+code-review-graph watch
+```
+
+Then, in Codex:
+
+```text
+$code-review-graph-build-graph
+```
+
+Codex should confirm the graph exists and report graph stats such as indexed files, nodes, edges, and languages.
+
+Next, make a code change and ask for a review:
+
+```text
+$code-review-graph-review-delta
+```
+
+Codex should refresh the graph, inspect the changed files plus their blast radius, and return a findings-first review instead of scanning the whole repo.
+
+For branch or PR-style review:
+
+```text
+$code-review-graph-review-pr
+```
+
+That workflow refreshes against a review base, gathers impacted callers/tests/importers, and focuses the review on the highest-risk paths first.
+
+### What Codex Users Should Expect
+
+- The first build creates `.code-review-graph/graph.db`, a local SQLite graph of your repository.
+- Follow-up reviews should be faster because Codex can ask the MCP server for graph context instead of broadly re-reading files.
+- `code-review-graph watch` is the main Codex auto-refresh path. Leave it running while you edit if you want the graph kept warm.
+- The Codex skills are guidance layers on top of the same MCP tools, so users can rely on either the skills or the tools directly.
+- If the graph is missing or stale, Codex should rebuild or refresh it before graph-dependent review work.
+- If the graph cannot answer a question yet, Codex should still fall back to normal file reads rather than failing hard.
+
+In practice, users should expect narrower review context, better blast-radius awareness, and fewer wasted tokens, not a fully autonomous reviewer that never needs source reads.
 
 ---
 
@@ -157,6 +233,15 @@ Large repositories benefit most. In the Next.js monorepo (27,732 files, 739K tok
 ---
 
 ## Usage
+
+### Codex Workflow
+
+For Codex, the normal loop is:
+
+1. Run `code-review-graph install --client codex` once per repository.
+2. Run `code-review-graph build` the first time.
+3. Optionally keep `code-review-graph watch` running while you work.
+4. Use `$code-review-graph-build-graph`, `$code-review-graph-review-delta`, or `$code-review-graph-review-pr` inside Codex depending on the task.
 
 <details>
 <summary><strong>Slash commands</strong></summary>
