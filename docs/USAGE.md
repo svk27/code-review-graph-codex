@@ -6,11 +6,13 @@
 
 ```bash
 pip install code-review-graph
-code-review-graph install    # creates .mcp.json for Claude Code
+code-review-graph install                    # Claude Code adapter
+code-review-graph install --client codex    # Codex adapter
+code-review-graph install --client all      # both adapters
 code-review-graph build      # parse your codebase
 ```
 
-Restart Claude Code to pick up the MCP server.
+Restart the client you configured to pick up the MCP server.
 
 ## Core Workflow
 
@@ -26,6 +28,12 @@ Parses your entire codebase. Takes ~10s for 500 files.
 ```
 Reviews only files changed since last commit + everything impacted. 5-10x fewer tokens than a full review.
 
+### 2a. Codex workflow
+```
+$code-review-graph-review-delta
+```
+Uses the repo-local Codex skill to refresh the graph, gather review context, and produce a findings-first review.
+
 ### 3. Review a PR
 ```
 /code-review-graph:review-pr
@@ -36,7 +44,7 @@ Comprehensive structural review of a branch diff with blast-radius analysis.
 ```bash
 code-review-graph watch
 ```
-Auto-updates the graph on every file save. Zero manual work.
+Auto-updates the graph on every file save. This is the primary auto-update path for Codex.
 
 ### 5. Visualize the graph (optional)
 ```bash

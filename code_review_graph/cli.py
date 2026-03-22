@@ -24,7 +24,6 @@ if sys.version_info < (3, 10):
     sys.exit(1)
 
 import argparse
-import json
 import logging
 import os
 from importlib.metadata import version as pkg_version
@@ -69,7 +68,7 @@ def _print_banner() -> None:
 {c}  ●──●──●{r}       {d}smarter code reviews{r}
 
   {b}Commands:{r}
-    {g}install{r}     Set up Claude Code integration
+    {g}install{r}     Set up Claude Code and/or Codex integration
     {g}init{r}        Alias for install
     {g}build{r}       Full graph build {d}(parse all files){r}
     {g}update{r}      Incremental update {d}(changed files only){r}
@@ -82,56 +81,7 @@ def _print_banner() -> None:
 """)
 
 
-def _handle_init(args: argparse.Namespace) -> None:
-    """Set up .mcp.json in the project root for Claude Code integration."""
-    from .incremental import find_repo_root
-
-    repo_root = Path(args.repo) if args.repo else find_repo_root()
-    if not repo_root:
-        repo_root = Path.cwd()
-
-    mcp_path = repo_root / ".mcp.json"
-    dry_run = getattr(args, "dry_run", False)
-
-    mcp_config = {
-        "mcpServers": {
-            "code-review-graph": {
-                "command": "uvx",
-                "args": ["code-review-graph", "serve"],
-            }
-        }
-    }
-
-    # Merge into existing .mcp.json if present
-    if mcp_path.exists():
-        try:
-            existing = json.loads(mcp_path.read_text())
-            if "code-review-graph" in existing.get("mcpServers", {}):
-                print(f"Already configured in {mcp_path}")
-                return
-            existing.setdefault("mcpServers", {}).update(mcp_config["mcpServers"])
-            mcp_config = existing
-        except json.JSONDecodeError:
-            print(f"Warning: existing {mcp_path} has invalid JSON, overwriting.")
-        except (KeyError, TypeError):
-            print(f"Warning: existing {mcp_path} has unexpected structure, overwriting.")
-
-    if dry_run:
-        print(f"[dry-run] Would write to {mcp_path}:")
-        print(json.dumps(mcp_config, indent=2))
-        print()
-        print("[dry-run] No files were modified.")
-        return
-
-    mcp_path.write_text(json.dumps(mcp_config, indent=2) + "\n")
-    print(f"Created {mcp_path}")
-    print()
-    print("Next steps:")
-    print("  1. code-review-graph build    # build the knowledge graph")
-    print("  2. Restart Claude Code        # to pick up the new MCP server")
-
-
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     """Main CLI entry point."""
     ap = argparse.ArgumentParser(
         prog="code-review-graph",
@@ -144,9 +94,15 @@ def main() -> None:
 
     # install (primary) + init (alias)
     install_cmd = sub.add_parser(
-        "install", help="Register MCP server with Claude Code (creates .mcp.json)"
+        "install", help="Register MCP server and adapter files for Claude Code and/or Codex"
     )
     install_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    install_cmd.add_argument(
+        "--client",
+        choices=("claude", "codex", "all"),
+        default="claude",
+        help="Which client integration to install (default: claude)",
+    )
     install_cmd.add_argument(
         "--dry-run", action="store_true",
         help="Show what would be done without writing files",
@@ -156,6 +112,12 @@ def main() -> None:
         "init", help="Alias for install"
     )
     init_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    init_cmd.add_argument(
+        "--client",
+        choices=("claude", "codex", "all"),
+        default="claude",
+        help="Which client integration to install (default: claude)",
+    )
     init_cmd.add_argument(
         "--dry-run", action="store_true",
         help="Show what would be done without writing files",
@@ -186,7 +148,7 @@ def main() -> None:
     serve_cmd = sub.add_parser("serve", help="Start MCP server (stdio transport)")
     serve_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
 
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     if args.version:
         print(f"code-review-graph {_get_version()}")
@@ -202,7 +164,17 @@ def main() -> None:
         return
 
     if args.command in ("init", "install"):
-        _handle_init(args)
+        from .install import InstallError, install, resolve_repo_root
+
+        try:
+            install(
+                repo_root=resolve_repo_root(args.repo),
+                client=args.client,
+                dry_run=args.dry_run,
+            )
+        except InstallError as exc:
+            print(str(exc), file=sys.stderr)
+            sys.exit(1)
         return
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

@@ -2,18 +2,19 @@
 
 ## System Overview
 
-`code-review-graph` is a Claude Code plugin that maintains a persistent, incrementally-updated knowledge graph of a codebase. It's designed to make code reviews faster and more context-aware by providing structural understanding of code relationships.
+`code-review-graph` maintains a persistent, incrementally-updated knowledge graph of a codebase. Its MCP server and graph tools are client-agnostic; Claude Code and Codex each add their own integration layer on top.
 
 ## Component Diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        Claude Code                           │
+│                Claude Code / Codex Adapters                 │
 │                                                              │
-│  Skills (SKILL.md)          Hooks (hooks.json)               │
-│  ├── build-graph            └── PostToolUse (Write|Edit|Bash) │
-│  ├── review-delta                → incremental update         │
-│  └── review-pr                                               │
+│  Claude: Skills + hooks       Codex: AGENTS + repo skills    │
+│  ├── build-graph              ├── code-review-graph-build-graph │
+│  ├── review-delta             ├── code-review-graph-review-delta │
+│  └── review-pr                └── code-review-graph-review-pr    │
+│  Claude auto-update: hooks    Codex auto-update: watch          │
 │          │                        │                          │
 │          ▼                        ▼                          │
 │  ┌────────────────────────────────────────────┐              │
@@ -65,7 +66,7 @@
 2. `get_impact_radius()` performs BFS from changed nodes through the graph
 3. Source snippets extracted for changed areas only
 4. Review guidance generated (test coverage gaps, wide blast radius warnings)
-5. Assembled into a structured, token-efficient context for Claude
+5. Assembled into a structured, token-efficient context for the agent
 
 ## Storage
 

@@ -1,6 +1,8 @@
 # All Available Commands
 
-## Skills (Claude Code slash commands)
+## Skills
+
+### Claude Code slash commands
 
 ### `/code-review-graph:build-graph`
 Build or update the knowledge graph.
@@ -18,6 +20,17 @@ Review a PR or branch diff.
 - Uses main/master as base
 - Full impact analysis across all PR commits
 - Structured output with risk assessment
+
+### Codex repo-local skills
+
+### `$code-review-graph-build-graph`
+Build or refresh the knowledge graph, then report graph health.
+
+### `$code-review-graph-review-delta`
+Refresh the graph and review only the current diff plus blast radius.
+
+### `$code-review-graph-review-pr`
+Refresh against a chosen base branch and review the PR with findings-first output.
 
 ## MCP Tools
 
@@ -95,9 +108,11 @@ section_name: str    # usage, review-delta, review-pr, commands, legal, watch, e
 ## CLI Commands
 
 ```bash
-# Register MCP server with Claude Code
-code-review-graph install           # also available as: code-review-graph init
-code-review-graph install --dry-run # preview without writing files
+# Register client adapters
+code-review-graph install                           # Claude Code (default)
+code-review-graph install --client codex           # Codex
+code-review-graph install --client all             # Claude Code + Codex
+code-review-graph install --client codex --dry-run # preview without writing files
 
 # Full build
 code-review-graph build

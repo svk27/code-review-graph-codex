@@ -15,7 +15,7 @@
 
 <br>
 
-Claude Code re-reads your entire codebase on every task. `code-review-graph` fixes that. It builds a structural map of your code with [Tree-sitter](https://tree-sitter.github.io/tree-sitter/), tracks changes incrementally, and gives Claude precise context so it reads only what matters.
+Coding agents re-read your entire codebase on every task. `code-review-graph` fixes that. It builds a structural map of your code with [Tree-sitter](https://tree-sitter.github.io/tree-sitter/), tracks changes incrementally, and gives Claude Code or Codex precise context so they read only what matters.
 
 <p align="center">
   <img src="diagrams/diagram1_before_vs_after.png" alt="The Token Problem: 6.8x fewer tokens with higher review quality" width="85%" />
@@ -25,7 +25,7 @@ Claude Code re-reads your entire codebase on every task. `code-review-graph` fix
 
 ## Quick Start
 
-**Claude Code Plugin** (recommended)
+**Claude Code Plugin** (recommended for Claude)
 
 ```bash
 claude plugin marketplace add tirth8205/code-review-graph
@@ -36,24 +36,27 @@ claude plugin install code-review-graph@code-review-graph
 
 ```bash
 pip install code-review-graph
-code-review-graph install
+code-review-graph install                  # Claude Code
+code-review-graph install --client codex  # Codex
+code-review-graph install --client all    # both adapters
 ```
 
-Restart Claude Code after either method. Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
+Restart the client you configured after install. Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
 
-Then open your project and tell Claude:
+Then open your project and:
 
 ```
-Build the code review graph for this project
+Claude Code: /code-review-graph:build-graph
+Codex: $code-review-graph-build-graph
 ```
 
-The initial build takes ~10 seconds for a 500-file project. After that, the graph updates automatically on every file edit and git commit.
+The initial build takes ~10 seconds for a 500-file project. After that, Claude can keep the graph fresh with hooks, while Codex uses a watcher-first workflow via `code-review-graph watch`.
 
 ---
 
 ## How It Works
 
-Your repository is parsed into an AST with Tree-sitter, stored as a graph of nodes (functions, classes, imports) and edges (calls, inheritance, test coverage), then queried at review time to compute the minimal set of files Claude needs to read.
+Your repository is parsed into an AST with Tree-sitter, stored as a graph of nodes (functions, classes, imports) and edges (calls, inheritance, test coverage), then queried at review time to compute the minimal set of files an agent needs to read.
 
 <p align="center">
   <img src="diagrams/diagram2_architecture_pipeline.png" alt="Architecture pipeline: Repository to Tree-sitter Parser to SQLite Graph to Blast Radius to Minimal Review Set" width="100%" />
@@ -63,7 +66,7 @@ Your repository is parsed into an AST with Tree-sitter, stored as a graph of nod
 <summary><strong>Blast-radius analysis</strong></summary>
 <br>
 
-When a file changes, the graph traces every caller, dependent, and test that could be affected. This is the "blast radius" of the change. Claude reads only these files instead of scanning the whole project.
+When a file changes, the graph traces every caller, dependent, and test that could be affected. This is the "blast radius" of the change. Your agent reads only these files instead of scanning the whole project.
 
 <p align="center">
   <img src="diagrams/diagram3_blast_radius.png" alt="Blast radius visualization showing how a change to login() propagates to callers, dependents, and tests" width="70%" />
@@ -75,7 +78,7 @@ When a file changes, the graph traces every caller, dependent, and test that cou
 <summary><strong>Incremental updates in &lt; 2 seconds</strong></summary>
 <br>
 
-On every git commit or file save, a hook fires. The graph diffs changed files, finds their dependents via SHA-256 hash checks, and re-parses only what changed. A 2,900-file project re-indexes in under 2 seconds.
+On every git commit or file save, an integration adapter can refresh the graph. Claude uses hooks; Codex uses `code-review-graph watch`. The graph diffs changed files, finds their dependents via SHA-256 hash checks, and re-parses only what changed. A 2,900-file project re-indexes in under 2 seconds.
 
 <p align="center">
   <img src="diagrams/diagram4_incremental_update.png" alt="Incremental update flow: git commit triggers diff, finds dependents, re-parses only 5 files while 2,910 are skipped" width="90%" />
@@ -172,7 +175,9 @@ Large repositories benefit most. In the Next.js monorepo (27,732 files, 739K tok
 <br>
 
 ```bash
-code-review-graph install     # Register MCP server with Claude Code
+code-review-graph install                    # Register Claude Code adapter
+code-review-graph install --client codex    # Register Codex adapter
+code-review-graph install --client all      # Register both adapters
 code-review-graph build       # Parse entire codebase
 code-review-graph update      # Incremental update (changed files only)
 code-review-graph status      # Graph statistics
@@ -187,7 +192,7 @@ code-review-graph serve       # Start MCP server
 <summary><strong>MCP tools</strong></summary>
 <br>
 
-Claude uses these automatically once the graph is built.
+Claude Code and Codex can use these automatically once the graph is built.
 
 | Tool | Description |
 |------|-------------|
@@ -212,7 +217,8 @@ Claude uses these automatically once the graph is built.
 | **Incremental updates** | Re-parses only changed files. Subsequent updates complete in under 2 seconds. |
 | **14 languages** | Python, TypeScript, JavaScript, Vue, Go, Rust, Java, C#, Ruby, Kotlin, Swift, PHP, Solidity, C/C++ |
 | **Blast-radius analysis** | Shows exactly which functions, classes, and files are affected by any change |
-| **Auto-update hooks** | Graph updates on every file edit and git commit without manual intervention |
+| **Client adapters** | Claude hooks/skills and Codex config, `AGENTS.md`, and repo-local skills sit on top of the same MCP core |
+| **Auto-update** | Claude can use hooks; Codex uses the watcher-first `code-review-graph watch` workflow |
 | **Semantic search** | Optional vector embeddings via sentence-transformers |
 | **Interactive visualisation** | D3.js force-directed graph with edge-type toggles and search |
 | **Local storage** | SQLite file in `.code-review-graph/`. No external database, no cloud dependency. |
