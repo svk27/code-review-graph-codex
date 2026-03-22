@@ -40,9 +40,9 @@ Otherwise, use the local source install below.
 git clone <internal-git-url> code-review-graph-codex
 cd code-review-graph-codex
 python3 -m pip install .
-code-review-graph install                  # Claude Code
-code-review-graph install --client codex  # Codex
-code-review-graph install --client all    # both adapters
+python3 -m code_review_graph install                  # Claude Code
+python3 -m code_review_graph install --client codex  # Codex
+python3 -m code_review_graph install --client all    # both adapters
 ```
 
 This repository is intended for internal usage only and is not published to PyPI, so users need to clone the repo and install it locally. Requires Python 3.10+. Restart the client you configured after install.
@@ -54,7 +54,7 @@ Claude Code: /code-review-graph:build-graph
 Codex: $code-review-graph-build-graph
 ```
 
-The initial build takes ~10 seconds for a 500-file project. After that, Claude can keep the graph fresh with hooks, while Codex uses a watcher-first workflow via `code-review-graph watch`.
+The initial build takes ~10 seconds for a 500-file project. After that, Claude can keep the graph fresh with hooks, while Codex uses a watcher-first workflow via `python3 -m code_review_graph watch`.
 
 ---
 
@@ -66,12 +66,12 @@ If you are setting this up for Codex specifically, this is the shortest end-to-e
 git clone <internal-git-url> code-review-graph-codex
 cd code-review-graph-codex
 python3 -m pip install .
-code-review-graph install --client codex
-code-review-graph build
-code-review-graph watch   # optional but recommended in a second terminal
+python3 -m code_review_graph install --client codex
+python3 -m code_review_graph build
+python3 -m code_review_graph watch   # optional but recommended in a second terminal
 ```
 
-`code-review-graph install --client codex` adds the Codex-facing integration files to your repo:
+`python3 -m code_review_graph install --client codex` adds the Codex-facing integration files to your repo:
 
 - `.codex/config.toml` with the `code-review-graph` MCP server
 - `AGENTS.md` guidance telling Codex when to prefer the graph tools
@@ -96,9 +96,9 @@ git clone <internal-git-url> code-review-graph-codex
 cd code-review-graph-codex
 python3 -m pip install .
 cd /path/to/your-repo
-code-review-graph install --client codex
-code-review-graph build
-code-review-graph watch
+python3 -m code_review_graph install --client codex
+python3 -m code_review_graph build
+python3 -m code_review_graph watch
 ```
 
 Then, in Codex:
@@ -129,7 +129,7 @@ That workflow refreshes against a review base, gathers impacted callers/tests/im
 
 - The first build creates `.code-review-graph/graph.db`, a local SQLite graph of your repository.
 - Follow-up reviews should be faster because Codex can ask the MCP server for graph context instead of broadly re-reading files.
-- `code-review-graph watch` is the main Codex auto-refresh path. Leave it running while you edit if you want the graph kept warm.
+- `python3 -m code_review_graph watch` is the main Codex auto-refresh path. Leave it running while you edit if you want the graph kept warm.
 - The Codex skills are guidance layers on top of the same MCP tools, so users can rely on either the skills or the tools directly.
 - If the graph is missing or stale, Codex should rebuild or refresh it before graph-dependent review work.
 - If the graph cannot answer a question yet, Codex should still fall back to normal file reads rather than failing hard.
@@ -162,7 +162,7 @@ When a file changes, the graph traces every caller, dependent, and test that cou
 <summary><strong>Incremental updates in &lt; 2 seconds</strong></summary>
 <br>
 
-On every git commit or file save, an integration adapter can refresh the graph. Claude uses hooks; Codex uses `code-review-graph watch`. The graph diffs changed files, finds their dependents via SHA-256 hash checks, and re-parses only what changed. A 2,900-file project re-indexes in under 2 seconds.
+On every git commit or file save, an integration adapter can refresh the graph. Claude uses hooks; Codex uses `python3 -m code_review_graph watch`. The graph diffs changed files, finds their dependents via SHA-256 hash checks, and re-parses only what changed. A 2,900-file project re-indexes in under 2 seconds.
 
 <p align="center">
   <img src="diagrams/diagram4_incremental_update.png" alt="Incremental update flow: git commit triggers diff, finds dependents, re-parses only 5 files while 2,910 are skipped" width="90%" />
@@ -246,9 +246,9 @@ Large repositories benefit most. In the Next.js monorepo (27,732 files, 739K tok
 
 For Codex, the normal loop is:
 
-1. Run `code-review-graph install --client codex` once per repository.
-2. Run `code-review-graph build` the first time.
-3. Optionally keep `code-review-graph watch` running while you work.
+1. Run `python3 -m code_review_graph install --client codex` once per repository.
+2. Run `python3 -m code_review_graph build` the first time.
+3. Optionally keep `python3 -m code_review_graph watch` running while you work.
 4. Use `$code-review-graph-build-graph`, `$code-review-graph-review-delta`, or `$code-review-graph-review-pr` inside Codex depending on the task.
 
 <details>
@@ -268,15 +268,15 @@ For Codex, the normal loop is:
 <br>
 
 ```bash
-code-review-graph install                    # Register Claude Code adapter
-code-review-graph install --client codex    # Register Codex adapter
-code-review-graph install --client all      # Register both adapters
-code-review-graph build       # Parse entire codebase
-code-review-graph update      # Incremental update (changed files only)
-code-review-graph status      # Graph statistics
-code-review-graph watch       # Auto-update on file changes
-code-review-graph visualize   # Generate interactive HTML graph
-code-review-graph serve       # Start MCP server
+python3 -m code_review_graph install                    # Register Claude Code adapter
+python3 -m code_review_graph install --client codex    # Register Codex adapter
+python3 -m code_review_graph install --client all      # Register both adapters
+python3 -m code_review_graph build       # Parse entire codebase
+python3 -m code_review_graph update      # Incremental update (changed files only)
+python3 -m code_review_graph status      # Graph statistics
+python3 -m code_review_graph watch       # Auto-update on file changes
+python3 -m code_review_graph visualize   # Generate interactive HTML graph
+python3 -m code_review_graph serve       # Start MCP server
 ```
 
 </details>
@@ -311,7 +311,7 @@ Claude Code and Codex can use these automatically once the graph is built.
 | **14 languages** | Python, TypeScript, JavaScript, Vue, Go, Rust, Java, C#, Ruby, Kotlin, Swift, PHP, Solidity, C/C++ |
 | **Blast-radius analysis** | Shows exactly which functions, classes, and files are affected by any change |
 | **Client adapters** | Claude hooks/skills and Codex config, `AGENTS.md`, and repo-local skills sit on top of the same MCP core |
-| **Auto-update** | Claude can use hooks; Codex uses the watcher-first `code-review-graph watch` workflow |
+| **Auto-update** | Claude can use hooks; Codex uses the watcher-first `python3 -m code_review_graph watch` workflow |
 | **Semantic search** | Optional vector embeddings via sentence-transformers |
 | **Interactive visualisation** | D3.js force-directed graph with edge-type toggles and search |
 | **Local storage** | SQLite file in `.code-review-graph/`. No external database, no cloud dependency. |
@@ -364,5 +364,5 @@ MIT. See [LICENSE](LICENSE).
 
 <p align="center">
 <br>
-<code>git clone &lt;internal-git-url&gt; code-review-graph-codex && cd code-review-graph-codex && python3 -m pip install . && code-review-graph install</code>
+<code>git clone &lt;internal-git-url&gt; code-review-graph-codex && cd code-review-graph-codex && python3 -m pip install . && python3 -m code_review_graph install</code>
 </p>

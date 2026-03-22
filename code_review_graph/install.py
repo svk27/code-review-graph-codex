@@ -17,8 +17,8 @@ Printer = Callable[[str], None]
 CLIENT_CHOICES = ("claude", "codex", "all")
 _CLAUDE_MCP_SERVER = {
     "code-review-graph": {
-        "command": "code-review-graph",
-        "args": ["serve"],
+        "command": "python3",
+        "args": ["-m", "code_review_graph", "serve"],
     }
 }
 _CODEX_CONFIG_START = "# BEGIN code-review-graph managed block"
@@ -35,8 +35,8 @@ _CODEX_CONFIG_BLOCK = "\n".join(
     [
         _CODEX_CONFIG_START,
         "[mcp_servers.code-review-graph]",
-        'command = "code-review-graph"',
-        'args = ["serve"]',
+        'command = "python3"',
+        'args = ["-m", "code_review_graph", "serve"]',
         _CODEX_CONFIG_END,
     ]
 )
@@ -48,7 +48,7 @@ _AGENTS_MANAGED_BLOCK = "\n".join(
         "",
         "- If `.code-review-graph/graph.db` exists, prefer the `code-review-graph` MCP tools before broad file scans.",
         "- Use the repo-local skills `$code-review-graph-build-graph`, `$code-review-graph-review-delta`, and `$code-review-graph-review-pr` for graph build and review workflows.",
-        "- Before graph-dependent review work, refresh the graph if freshness is uncertain. A running `code-review-graph watch` process is the preferred auto-update path in Codex.",
+        "- Before graph-dependent review work, refresh the graph if freshness is uncertain. A running `python3 -m code_review_graph watch` process is the preferred auto-update path in Codex.",
         "- Fall back to normal file reads only when the graph does not exist yet or the MCP tools cannot answer the task.",
         _AGENTS_BLOCK_END,
     ]
@@ -235,9 +235,9 @@ def _normalize_trailing_newline(text: str) -> str:
 def _print_next_steps(selected: tuple[str, ...], printer: Printer) -> None:
     printer("")
     printer("Next steps:")
-    printer("  1. code-review-graph build    # build the knowledge graph")
+    printer("  1. python3 -m code_review_graph build    # build the knowledge graph")
     if "codex" in selected:
-        printer("  2. code-review-graph watch    # optional watcher-first auto-update for Codex")
+        printer("  2. python3 -m code_review_graph watch    # optional watcher-first auto-update for Codex")
         printer("  3. Restart Codex or start a new session")
     elif "claude" in selected:
         printer("  2. Restart Claude Code        # to pick up the new MCP server")
