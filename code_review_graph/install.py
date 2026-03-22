@@ -17,8 +17,8 @@ Printer = Callable[[str], None]
 CLIENT_CHOICES = ("claude", "codex", "all")
 _CLAUDE_MCP_SERVER = {
     "code-review-graph": {
-        "command": "uvx",
-        "args": ["code-review-graph", "serve"],
+        "command": "code-review-graph",
+        "args": ["serve"],
     }
 }
 _CODEX_CONFIG_START = "# BEGIN code-review-graph managed block"
@@ -35,8 +35,8 @@ _CODEX_CONFIG_BLOCK = "\n".join(
     [
         _CODEX_CONFIG_START,
         "[mcp_servers.code-review-graph]",
-        'command = "uvx"',
-        'args = ["code-review-graph", "serve"]',
+        'command = "code-review-graph"',
+        'args = ["serve"]',
         _CODEX_CONFIG_END,
     ]
 )

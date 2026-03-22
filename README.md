@@ -25,23 +25,27 @@ Coding agents re-read your entire codebase on every task. `code-review-graph` fi
 
 ## Quick Start
 
-**Claude Code Plugin** (recommended for Claude)
+**Claude Code Plugin** (only if your team publishes it separately)
 
 ```bash
 claude plugin marketplace add svk27/code-review-graph
 claude plugin install code-review-graph@code-review-graph
 ```
 
-**pip**
+Otherwise, use the local source install below.
+
+**Internal source install**
 
 ```bash
-pip install code-review-graph
+git clone <internal-git-url> code-review-graph-codex
+cd code-review-graph-codex
+python3 -m pip install .
 code-review-graph install                  # Claude Code
 code-review-graph install --client codex  # Codex
 code-review-graph install --client all    # both adapters
 ```
 
-Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). Restart the client you configured after install.
+This repository is intended for internal usage only and is not published to PyPI, so users need to clone the repo and install it locally. Requires Python 3.10+. Restart the client you configured after install.
 
 Then open your project and:
 
@@ -59,7 +63,9 @@ The initial build takes ~10 seconds for a 500-file project. After that, Claude c
 If you are setting this up for Codex specifically, this is the shortest end-to-end path:
 
 ```bash
-pip install code-review-graph
+git clone <internal-git-url> code-review-graph-codex
+cd code-review-graph-codex
+python3 -m pip install .
 code-review-graph install --client codex
 code-review-graph build
 code-review-graph watch   # optional but recommended in a second terminal
@@ -86,8 +92,10 @@ $code-review-graph-review-pr
 Here is a practical first session in a repository you want Codex to review:
 
 ```bash
-cd your-repo
-pip install code-review-graph
+git clone <internal-git-url> code-review-graph-codex
+cd code-review-graph-codex
+python3 -m pip install .
+cd /path/to/your-repo
 code-review-graph install --client codex
 code-review-graph build
 code-review-graph watch
@@ -325,7 +333,7 @@ node_modules/**
 For semantic search, install the optional embeddings dependencies:
 
 ```bash
-pip install code-review-graph[embeddings]
+python3 -m pip install ".[embeddings]"
 ```
 
 </details>
@@ -335,10 +343,10 @@ pip install code-review-graph[embeddings]
 ## Contributing
 
 ```bash
-git clone https://github.com/svk27/code-review-graph.git
-cd code-review-graph
+git clone <internal-git-url> code-review-graph-codex
+cd code-review-graph-codex
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+python3 -m pip install -e ".[dev]"
 pytest
 ```
 
@@ -356,5 +364,5 @@ MIT. See [LICENSE](LICENSE).
 
 <p align="center">
 <br>
-<code>pip install code-review-graph && code-review-graph install</code>
+<code>git clone &lt;internal-git-url&gt; code-review-graph-codex && cd code-review-graph-codex && python3 -m pip install . && code-review-graph install</code>
 </p>

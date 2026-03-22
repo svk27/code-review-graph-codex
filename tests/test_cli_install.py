@@ -56,11 +56,8 @@ def test_install_codex_on_clean_repo(tmp_path, capsys):
     assert "Restart Codex or start a new session" in output
 
     config = tomllib.loads(config_path.read_text())
-    assert config["mcp_servers"]["code-review-graph"]["command"] == "uvx"
-    assert config["mcp_servers"]["code-review-graph"]["args"] == [
-        "code-review-graph",
-        "serve",
-    ]
+    assert config["mcp_servers"]["code-review-graph"]["command"] == "code-review-graph"
+    assert config["mcp_servers"]["code-review-graph"]["args"] == ["serve"]
 
     agents_text = agents_path.read_text()
     assert "<!-- BEGIN code-review-graph managed block -->" in agents_text
