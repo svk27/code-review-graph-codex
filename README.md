@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/tirth8205/code-review-graph/stargazers"><img src="https://img.shields.io/github/stars/tirth8205/code-review-graph?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/svk27/code-review-graph/stargazers"><img src="https://img.shields.io/github/stars/svk27/code-review-graph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
-  <a href="https://github.com/tirth8205/code-review-graph/actions/workflows/ci.yml"><img src="https://github.com/tirth8205/code-review-graph/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/svk27/code-review-graph/actions/workflows/ci.yml"><img src="https://github.com/svk27/code-review-graph/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?style=flat-square" alt="Python 3.10+"></a>
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP-compatible-green.svg?style=flat-square" alt="MCP"></a>
   <a href="#"><img src="https://img.shields.io/badge/version-1.8.4-purple.svg?style=flat-square" alt="v1.8.4"></a>
@@ -28,7 +28,7 @@ Coding agents re-read your entire codebase on every task. `code-review-graph` fi
 **Claude Code Plugin** (recommended for Claude)
 
 ```bash
-claude plugin marketplace add tirth8205/code-review-graph
+claude plugin marketplace add svk27/code-review-graph
 claude plugin install code-review-graph@code-review-graph
 ```
 
@@ -250,7 +250,7 @@ pip install code-review-graph[embeddings]
 ## Contributing
 
 ```bash
-git clone https://github.com/tirth8205/code-review-graph.git
+git clone https://github.com/svk27/code-review-graph.git
 cd code-review-graph
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
